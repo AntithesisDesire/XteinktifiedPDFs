@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>✦ Readified Xteink PDF ✦</title>
+
+  <script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,600&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Lora', serif;
+      height: 100vh;
+      background: linear-gradient(170deg, #f4faf4 0%, #e8f3e6 40%, #cfe5cf 100%);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .app-wrapper {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .petals {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .petal {
+      position: absolute;
+      top: -80px;
+      width: 10px;
+      height: 17px;
+      background: radial-gradient(ellipse at 50% 70%, #d7ccec 0%, #c2aee0 60%, #b39ddb 100%);
+      border-radius: 60% 60% 50% 50% / 70% 70% 30% 30%;
+      opacity: 0.16;
+      filter: blur(0.3px);
+      box-shadow: 0 0 4px rgba(160, 140, 200, 0.2);
+      animation: fall linear infinite;
+    }
+
+    @keyframes fall {
+      0%   { transform: translateY(0) rotate(0deg) scale(0.7); opacity: 0.16; }
+      20%  { transform: translateY(20vh) rotate(80deg) scale(1); opacity: 0.22; }
+      40%  { transform: translateY(40vh) rotate(170deg) scale(0.85); opacity: 0.14; }
+      60%  { transform: translateY(60vh) rotate(250deg) scale(0.9); opacity: 0.19; }
+      80%  { transform: translateY(80vh) rotate(330deg) scale(1.05); opacity: 0.13; }
+      100% { transform: translateY(110vh) rotate(380deg) scale(0.6); opacity: 0.08; }
+    }
+
+    .container {
+      position: absolute;
+      left: 50%; top: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: 2.5rem;
+      box-shadow: 0 20px 50px rgba(90, 110, 70, 0.15);
+      padding: 2.2rem 1.8rem 1.8rem 1.8rem;
+      width: 580px;
+      max-width: 90vw;
+      text-align: center;
+      border: 1px solid rgba(140, 170, 120, 0.3);
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .face-icon {
+      width: 160px;
+      height: 160px;
+      margin: 0 auto 0.6rem auto;
+      border-radius: 50%;
+      overflow: hidden;
+      background: #d4e6d0;
+      box-shadow: 0 4px 18px rgba(100, 130, 80, 0.3);
+    }
+    .face-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    .dialog-bubble {
+      background: #f4fbf2;
+      border: 2px solid #bacfb2;
+      border-radius: 1.8rem 1.8rem 1.8rem 0.5rem;
+      padding: 0.9rem 1.2rem;
+      margin: 0.6rem auto 1.2rem auto;
+      max-width: 95%;
+      font-style: italic;
+      color: #4a5a3f;
+      font-size: 0.95rem;
+      box-shadow: 0 2px 10px rgba(110, 140, 90, 0.1);
+      transition: 0.3s;
+    }
+    .dialog-bubble.updated {
+      background: #f9fff7;
+      border-color: #a7c48a;
+      color: #3b4a2e;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.9rem;
+      color: #5a6e4d;
+      margin-bottom: 0.2rem;
+    }
+    .subtitle {
+      font-style: italic;
+      color: #7a8f6b;
+      margin-bottom: 1.4rem;
+      font-size: 0.9rem;
+    }
+
+    label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: 600;
+      color: #4a5a3f;
+      font-size: 0.9rem;
+      text-align: left;
+    }
+    input, select, button {
+      font-family: 'Lora', serif;
+      font-size: 0.9rem;
+      width: 100%;
+      padding: 0.65rem 1rem;
+      margin-top: 0.3rem;
+      border: 1.5px solid #c8dabe;
+      border-radius: 2rem;
+      background: #fafff9;
+      color: #3e4f31;
+      outline: none;
+    }
+    input:focus, select:focus {
+      border-color: #9bb87f;
+      box-shadow: 0 0 0 3px rgba(155, 184, 127, 0.2);
+    }
+    .hint {
+      font-size: 0.75rem;
+      color: #7e9672;
+      margin-top: 0.15rem;
+      text-align: left;
+      font-style: italic;
+    }
+
+    button {
+      margin-top: 1.6rem;
+      background: #9bb87f;
+      color: white;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 10px rgba(120, 150, 90, 0.3);
+      transition: 0.2s;
+    }
+    button:hover { background: #86a86b; transform: translateY(-1px); }
+    button:active { transform: translateY(1px); }
+    button:disabled { background: #bccfae; cursor: not-allowed; transform: none; }
+
+    #progress { margin-top: 1rem; }
+    .status { font-style: italic; color: #5a6e4d; margin-bottom: 0.3rem; }
+    progress {
+      width: 100%; height: 6px;
+      border-radius: 10px; background: #e2eed8;
+    }
+    progress::-webkit-progress-bar { background: #e2eed8; border-radius: 10px; }
+    progress::-webkit-progress-value { background: #9bb87f; border-radius: 10px; }
+
+    @keyframes popIn {
+      0% { transform: scale(0.9); opacity: 0; }
+      60% { transform: scale(1.05); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .done-pop {
+      animation: popIn 0.5s ease forwards;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="petals" id="petalsContainer"></div>
+
+  <div class="app-wrapper">
+    <div class="container" id="mainCard">
+      <div class="face-icon" id="faceIcon">
+        <img src="Hein.png" alt="Hein" id="faceImg">
+      </div>
+      <div class="dialog-bubble" id="dialogBubble">
+        My lady, shall we make your PDF perfectly readable?
+      </div>
+
+      <h1>✦ PDF Xteink-ify ✦</h1>
+      <p class="subtitle">turning tiny fonts into readable text</p>
+
+      <label for="fileInput">1. PDF:</label>
+      <input type="file" id="fileInput" accept="application/pdf">
+
+      <label for="scaleInput">2. Render scale:</label>
+      <input type="number" id="scaleInput" value="2.5" step="0.5" min="1" max="5">
+      <div class="hint">Each image is set at 480x800 pixels.<br>
+        Magnification Scale: Minimum at 1, Maximum at 5.</div>
+
+      <label for="outputFormat">3. Output format:</label>
+      <select id="outputFormat">
+        <option value="pdf" selected>𑁍 Single PDF</option>
+        <option value="zip">✦ ZIP of PNG Images</option>
+      </select>
+
+      <label for="pageRange">4. Page range (optional, e.g. "1-5" or "1,3,5"):</label>
+      <input type="text" id="pageRange" placeholder="Leave blank for all pages!">
+
+      <button id="processBtn">✦ Generate & Download ✦</button>
+
+      <div id="progress">
+        <p class="status" id="statusMsg">𓄼 Ready to go whenever!</p>
+        <progress id="progressBar" value="0" max="100" style="display:none;"></progress>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function createPetals() {
+      const container = document.getElementById('petalsContainer');
+      const count = 45;
+      for (let i = 0; i < count; i++) {
+        const petal = document.createElement('div');
+        petal.classList.add('petal');
+        petal.style.left = Math.random() * 100 + '%';
+        const size = 18 + Math.random() * 30;
+        petal.style.width = size + 'px';
+        petal.style.height = (size * 1.7) + 'px';
+        petal.style.animationDuration = 8 + Math.random() * 18 + 's';
+        petal.style.animationDelay = Math.random() * 22 + 's';
+        const hue = 260 + Math.random() * 20;
+        const lightness = 70 + Math.random() * 15;
+        petal.style.background = `radial-gradient(ellipse at 50% 70%, hsl(${hue}, 40%, ${lightness}%) 0%, hsl(${hue}, 45%, ${lightness-10}%) 60%, hsl(${hue}, 50%, ${lightness-20}%) 100%)`;
+        container.appendChild(petal);
+      }
+    })();
+
+    function scaleCardToFit() {
+      const wrapper = document.querySelector('.app-wrapper');
+      const card = document.getElementById('mainCard');
+      if (!wrapper || !card) return;
+
+      card.style.transform = 'translate(-50%, -50%)';
+      const cardWidth = card.offsetWidth;
+      const cardHeight = card.offsetHeight;
+
+      const maxWidth = wrapper.clientWidth * 0.95;
+      const maxHeight = wrapper.clientHeight * 0.95;
+      let scale = Math.min(maxWidth / cardWidth, maxHeight / cardHeight, 1);
+
+      card.style.transform = `translate(-50%, -50%) scale(${scale})`;
+    }
+
+    window.addEventListener('resize', scaleCardToFit);
+    window.addEventListener('load', scaleCardToFit);
+
+    const progressBarObserver = new MutationObserver(scaleCardToFit);
+    progressBarObserver.observe(document.getElementById('progressBar'), { attributes: true, attributeFilter: ['style'] });
+
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+
+    const fileInput = document.getElementById('fileInput');
+    const scaleInput = document.getElementById('scaleInput');
+    const outputFormat = document.getElementById('outputFormat');
+    const pageRangeInput = document.getElementById('pageRange');
+    const processBtn = document.getElementById('processBtn');
+    const statusMsg = document.getElementById('statusMsg');
+    const progressBarElem = document.getElementById('progressBar');
+    const dialogBubble = document.getElementById('dialogBubble');
+    const faceImg = document.getElementById('faceImg');
+
+    const TILE_WIDTH = 480;
+    const TILE_HEIGHT = 800;
+
+    function parsePageRange(rangeStr, totalPages) {
+      if (!rangeStr.trim()) return Array.from({ length: totalPages }, (_, i) => i + 1);
+      const pages = new Set();
+      const parts = rangeStr.split(',');
+      for (let part of parts) {
+        part = part.trim();
+        if (part.includes('-')) {
+          const [start, end] = part.split('-').map(Number);
+          if (isNaN(start) || isNaN(end)) continue;
+          for (let i = Math.max(1, start); i <= Math.min(totalPages, end); i++) pages.add(i);
+        } else {
+          const p = Number(part);
+          if (!isNaN(p) && p >= 1 && p <= totalPages) pages.add(p);
+        }
+      }
+      return Array.from(pages).sort((a, b) => a - b);
+    }
+
+    async function processPDF() {
+      const file = fileInput.files[0];
+      if (!file) { alert('Please select a PDF file.'); return; }
+
+      const scale = parseFloat(scaleInput.value) || 2.5;
+      const format = outputFormat.value;
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const totalPages = pdf.numPages;
+
+      let pagesToProcess = [];
+      try { pagesToProcess = parsePageRange(pageRangeInput.value, totalPages); }
+      catch (e) { alert('Invalid page range format.'); return; }
+      if (pagesToProcess.length === 0) { alert('No valid pages to process.'); return; }
+
+      processBtn.disabled = true;
+      statusMsg.textContent = '𓄼 Preparing...';
+      dialogBubble.textContent = 'Certainly, my lady! Just a moment~';
+      dialogBubble.classList.add('updated');
+      progressBarElem.style.display = 'block';
+      progressBarElem.value = 0;
+      progressBarElem.max = pagesToProcess.length * 10;
+      faceImg.src = 'Hein.png';
+
+      scaleCardToFit();
+
+      const allTiles = [];
+      let processedPageCount = 0;
+
+      for (const pageNum of pagesToProcess) {
+        statusMsg.textContent = `𓄼 Processing page ${pageNum} / ${totalPages} …`;
+        dialogBubble.textContent = `𓄼 Turning page ${pageNum} into readable images...`;
+        const page = await pdf.getPage(pageNum);
+        const viewport = page.getViewport({ scale });
+        const cols = Math.ceil(viewport.width / TILE_WIDTH);
+        const rows = Math.ceil(viewport.height / TILE_HEIGHT);
+
+        for (let row = 0; row < rows; row++) {
+          for (let col = 0; col < cols; col++) {
+            const canvas = document.createElement('canvas');
+            canvas.width = TILE_WIDTH; canvas.height = TILE_HEIGHT;
+            const ctx = canvas.getContext('2d');
+            ctx.setTransform(1, 0, 0, 1, -col * TILE_WIDTH, -row * TILE_HEIGHT);
+            await page.render({ canvasContext: ctx, viewport }).promise;
+            allTiles.push({ pageNum, row, col, canvas });
+          }
+        }
+        page.cleanup();
+        processedPageCount++;
+        progressBarElem.value = processedPageCount * 10;
+      }
+
+      statusMsg.textContent = `𓄼 Building ${format === 'pdf' ? 'PDF' : 'ZIP'} …`;
+      dialogBubble.textContent = `Almost done! Putting your ${format === 'pdf' ? 'PDF' : 'images'} together!`;
+
+      if (format === 'pdf') {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ unit: 'pt', format: [TILE_WIDTH, TILE_HEIGHT] });
+        for (let i = 0; i < allTiles.length; i++) {
+          const tile = allTiles[i];
+          const imgData = tile.canvas.toDataURL('image/png');
+          if (i > 0) doc.addPage([TILE_WIDTH, TILE_HEIGHT]);
+          doc.addImage(imgData, 'PNG', 0, 0, TILE_WIDTH, TILE_HEIGHT);
+          progressBarElem.value = processedPageCount * 10 + Math.floor((i / allTiles.length) * 10);
+        }
+        doc.save('xteink_480x800.pdf');
+      } else {
+        const zip = new JSZip();
+        let tileIndex = 0;
+        for (const tile of allTiles) {
+          const blob = await new Promise(resolve => tile.canvas.toBlob(resolve, 'image/png'));
+          const fileName = `page_${tile.pageNum}_tile_${tile.row+1}x${tile.col+1}.png`;
+          zip.file(fileName, blob);
+          tileIndex++;
+        }
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(zipBlob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'xteink_480x800.zip';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      progressBarElem.style.display = 'none';
+      statusMsg.textContent = '𑁍 Done! Please enjoy! 𑁍';
+      statusMsg.classList.add('done-pop');
+      faceImg.src = 'Hein_blush.png';
+      dialogBubble.textContent = 'All done my lady! Did I do a good job?';
+      dialogBubble.classList.add('updated');
+      processBtn.disabled = false;
+
+      scaleCardToFit();
+
+      statusMsg.addEventListener('animationend', () => {
+        statusMsg.classList.remove('done-pop');
+      }, { once: true });
+    }
+
+    fileInput.addEventListener('change', () => {
+      faceImg.src = 'Hein.png';
+      dialogBubble.textContent = 'A new command? Certainly, my lady~';
+      dialogBubble.classList.remove('updated');
+      statusMsg.textContent = '𓄼 Ready to go whenever!';
+      scaleCardToFit();
+    });
+
+    processBtn.addEventListener('click', processPDF);
+  </script>
+</body>
+</html>
