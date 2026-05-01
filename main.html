@@ -197,10 +197,10 @@
   <div class="app-wrapper">
     <div class="container" id="mainCard">
       <div class="face-icon" id="faceIcon">
-        <img src="Hein.png" alt="Hein" id="faceImg">
+        <img src="Icon.png" alt="Hein" id="faceImg">
       </div>
       <div class="dialog-bubble" id="dialogBubble">
-        My lady, shall we make your PDF perfectly readable?
+        Hi! Let's make your PDF perfectly readable!
       </div>
 
       <h1>✦ PDF Xteink-ify ✦</h1>
@@ -324,7 +324,7 @@
 
       processBtn.disabled = true;
       statusMsg.textContent = '𓄼 Preparing...';
-      dialogBubble.textContent = 'Certainly, my lady! Just a moment~';
+      dialogBubble.textContent = 'Sure, just a moment!';
       dialogBubble.classList.add('updated');
       progressBarElem.style.display = 'block';
       progressBarElem.value = 0;
@@ -393,8 +393,8 @@
       progressBarElem.style.display = 'none';
       statusMsg.textContent = '𑁍 Done! Please enjoy! 𑁍';
       statusMsg.classList.add('done-pop');
-      faceImg.src = 'Hein_blush.png';
-      dialogBubble.textContent = 'All done my lady! Did I do a good job?';
+      faceImg.src = 'Icon_Done.png';
+      dialogBubble.textContent = 'All done!';
       dialogBubble.classList.add('updated');
       processBtn.disabled = false;
 
@@ -406,8 +406,8 @@
     }
 
     fileInput.addEventListener('change', () => {
-      faceImg.src = 'Hein.png';
-      dialogBubble.textContent = 'A new command? Certainly, my lady~';
+      faceImg.src = 'Icon.png';
+      dialogBubble.textContent = 'Sure, let us utilize another pdf!';
       dialogBubble.classList.remove('updated');
       statusMsg.textContent = '𓄼 Ready to go whenever!';
       scaleCardToFit();
